@@ -5,7 +5,7 @@ import { Sounds, loader } from './resources';
 import { Game } from './game';
 
 const engine = new ex.Engine({
-    backgroundColor: ex.Color.Black
+    backgroundColor: ex.Color.Black,
 });
 engine.backgroundColor = ex.Color.Black;
 engine.setAntialiasing(false);
@@ -25,7 +25,7 @@ engine.on('visible', () => {
 });
 
 engine.input.keyboard.on('press', (evt: ex.Input.KeyEvent) => {
-    if (evt.key === ex.Input.Keys.D) {
+    if (evt.key === ex.Input.Keys.Semicolon) {
       engine.isDebug = !engine.isDebug;
     }
 });

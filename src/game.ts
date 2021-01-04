@@ -1,9 +1,9 @@
 import * as ex from 'excalibur';
-import { Ship } from './actors/ship';
+import { playerShip} from './actors/ship';
 import { HealthBar } from './actors/health-bar';
 
 import { stats } from './stats';
-import { Baddie } from './actors/baddie';
+import { Baddie, FireConfig, FireType as BaddieFireType } from './actors/baddie';
 import Config from './config';
 
 import { animManager } from './actors/animation-manager';
@@ -17,8 +17,7 @@ export class Game extends ex.Scene {
     onInitialize(engine: ex.Engine) {
         engine.add(animManager);
 
-        const ship = new Ship(engine.halfDrawWidth, 800, 80, 80);
-        engine.add(ship);
+        engine.add(playerShip);
 
         const healthBar = new HealthBar();
         engine.add(healthBar);
@@ -37,19 +36,38 @@ export class Game extends ex.Scene {
         gameOverLabel.scale = new ex.Vector(8,8);
         gameOverLabel.actions.blink(1000, 1000, 400).repeatForever();
 
+        interface BaddieConfig {
+            x: number,
+            fireConfig: FireConfig
+        }
 
-
-        let baddieTimer = new ex.Timer({
-            fcn: () => {
-                var bad = new Baddie(Math.random()*1000 + 200, -100, 80, 80);
-                engine.add(bad);
+        let baddies = [
+            {
+                x: engine.drawWidth / 3,
+                fireConfig: {
+                    fireType: BaddieFireType.Shotgun,
+                    speed: 150,
+                    bulletCount: 8,
+                    bulletOffset: 5
+                }
+                //other properties like frequency range, or timestamps to shoot will go here
             },
-            interval: Config.spawnTime,
-            repeats: true,
-            numberOfRepeats: -1
-        });
+            {
+                x: engine.drawWidth / 3 * 2,
+                fireConfig: {
+                    fireType: BaddieFireType.Singleshot,
+                    speed: 300
+                }
+            }
+        ];
 
-        engine.addTimer(baddieTimer);
+        let nextBaddieY = 50;
+
+        baddies.map((baddieConfig: BaddieConfig) => {
+            let newBaddie = new Baddie(baddieConfig.x, nextBaddieY, 80, 80, baddieConfig.fireConfig);
+            nextBaddieY += 90;
+            engine.add(newBaddie);
+        });
 
         engine.on('preupdate', () => {
             if (stats.gameOver) {

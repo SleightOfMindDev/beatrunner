@@ -6,6 +6,8 @@ import { Baddie } from "./baddie";
 import { animManager } from "./animation-manager";
 import { stats } from "../stats";
 
+
+
 type FireFunction = (engine: ex.Engine) => void;
 const throttle = function(this: any, func: FireFunction, throttle: number): FireFunction {
     var lastTime = Date.now();
@@ -24,6 +26,7 @@ export class Ship extends ex.Actor {
     private flipBarrel = false;
     private throttleFire?: FireFunction;
     private explode?: ex.Animation;
+
     constructor(x: number, y: number, width: number, height: number) {
         super({
             pos: new ex.Vector(x, y),
@@ -88,7 +91,7 @@ export class Ship extends ex.Actor {
 
         // Keep player in the viewport
        if(this.pos.x < 0) this.pos.x = 0;
-       if(this.pos.y < 0) this.pos.y = 0;
+       if(this.pos.y < 170 + this.height) this.pos.y = 190 + this.height;
        if(this.pos.x > engine.drawWidth - this.width) this.pos.x = (engine.drawWidth - this.width);
        if(this.pos.y > engine.drawHeight - this.height) this.pos.y = (engine.drawHeight - this.height);
     }
@@ -147,3 +150,4 @@ export class Ship extends ex.Actor {
     }
 }
 
+export const playerShip = new Ship(100, 100, 80, 80);
