@@ -1,7 +1,8 @@
 use lazy_static::lazy_static;
 use rustfft::num_traits::FromPrimitive;
 use rustfft::{num_complex::Complex, FftPlanner};
-use std::path::PathBuf;
+use simplemad::Decoder;
+use std::{fs::File, path::PathBuf, time::Duration};
 
 lazy_static! {
     static ref RES_DIR: PathBuf = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -11,9 +12,43 @@ lazy_static! {
 }
 
 fn main() {
-    let data = std::fs::read(RES_DIR.join("soundtrack.mp3")).expect("Could not open file");
-    let (header, samples) = puremp3::read_mp3(data.as_slice()).expect("Invalid MP3");
+    let data = std::fs::read(RES_DIR.join("Kalimba.mp3")).expect("Could not open file");
+    //let data = std::fs::read(RES_DIR.join("soundtrack.mp3")).expect("Could not open file");
+    //println!("{:#?}", RES_DIR.join("soundtrack.mp3"));
+    //let (header, samples) = puremp3::read_mp3(data.as_slice()).expect("Invalid MP3");
 
+    //simplemad
+    let file = File::open(RES_DIR.join("Kalimba.mp3")).unwrap();
+    let decoder = Decoder::decode(file).unwrap();
+    let headers = Decoder::decode_headers(file).unwrap();
+
+    let duration = headers
+        .filter_map(|r| match r {
+            Ok(f) => Some(f.duration),
+            Err(_) => None,
+        })
+        .fold(Duration::new(0, 0), |acc, dtn| acc + dtn);
+
+    println!("Song duration: {:#?}", duration);
+
+    for decoding_result in decoder {
+        match decoding_result {
+            Err(e) => println!("Error: {:?}", e),
+            Ok(frame) => {
+                println!("Frame sample rate: {}", frame.sample_rate);
+                println!(
+                    "First audio sample (left channel): {:?}",
+                    frame.samples[0][0]
+                );
+                println!(
+                    "First audio sample (right channel): {:?}",
+                    frame.samples[1][0]
+                );
+            }
+        }
+    }
+
+    /*
     // extract mp3 sample rate from header
     let sample_rate = header.sample_rate.hz() as usize;
 
@@ -30,11 +65,14 @@ fn main() {
     fft.process(mono_samples.as_mut_slice());
 
     println!("{:#?}", mono_samples);
+     */
 }
 
 // Read mp3
 // -- Read into array(?)
 // -- Array size: sample rate * song length in secs
+// -- Naivest approach: read entire song during preprocessing (but apply hard limit to time ~5mins?)
+// --                   This may take too long / too much memory, but we can worry about that later.
 
 // Frequency analysis
 // -- FFT over whole(?) mp3 to find frequency content
