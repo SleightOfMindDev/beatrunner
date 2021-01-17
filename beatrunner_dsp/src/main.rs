@@ -19,8 +19,11 @@ fn main() {
 
     //simplemad
     let file = File::open(RES_DIR.join("Kalimba.mp3")).unwrap();
+    let file2 = File::open(RES_DIR.join("Kalimba.mp3")).unwrap();
     let decoder = Decoder::decode(file).unwrap();
-    let headers = Decoder::decode_headers(file).unwrap();
+    let headers = Decoder::decode_headers(file2).unwrap();
+
+    let mut samples: Vec<i32> = vec![];
 
     let duration = headers
         .filter_map(|r| match r {
@@ -35,18 +38,29 @@ fn main() {
         match decoding_result {
             Err(e) => println!("Error: {:?}", e),
             Ok(frame) => {
-                println!("Frame sample rate: {}", frame.sample_rate);
-                println!(
-                    "First audio sample (left channel): {:?}",
-                    frame.samples[0][0]
-                );
-                println!(
-                    "First audio sample (right channel): {:?}",
-                    frame.samples[1][0]
-                );
+                samples.push(frame.samples[0][0].to_raw() / 2 + frame.samples[1][0].to_raw() / 2);
+                // println!("Frame sample rate: {}", frame.sample_rate);
+                // println!(
+                //     "First audio sample (left channel): {:?}",
+                //     frame.samples[0][0]
+                // );
+                // println!(
+                //     "First audio sample (right channel): {:?}",
+                //     frame.samples[1][0]
+                // );
             }
         }
     }
+
+    let min_val = samples.iter().min();
+    let max_val = samples.iter().max();
+
+    println!(
+        "Read {:#?} samples from mp3, with range [{:#?},{:#?}]",
+        samples.len(),
+        min_val,
+        max_val,
+    );
 
     /*
     // extract mp3 sample rate from header
