@@ -48,7 +48,8 @@ export class Game extends ex.Scene {
                     fireType: BaddieFireType.Shotgun,
                     speed: 150,
                     bulletCount: 8,
-                    bulletOffset: 5
+                    bulletOffset: 5,
+                    fireTimes: Array(100).fill(null).map((x, index) => index * 3000)
                 }
                 //other properties like frequency range, or timestamps to shoot will go here
             },
@@ -56,7 +57,8 @@ export class Game extends ex.Scene {
                 x: engine.drawWidth / 3 * 2,
                 fireConfig: {
                     fireType: BaddieFireType.Singleshot,
-                    speed: 300
+                    speed: 300,
+                    fireTimes: Array(300).fill(null).map((x, index) => index * 1000)
                 }
             }
         ];

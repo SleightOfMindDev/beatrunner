@@ -16,9 +16,10 @@ export enum FireType {
 export interface FireConfig {
     fireType: FireType,
     speed: number,
-    maxMissAngle?: number
-    bulletCount?: number
-    bulletOffset?: number
+    maxMissAngle?: number,
+    bulletCount?: number,
+    bulletOffset?: number,
+    fireTimes: ReadonlyArray<number>
 }
 
 const random = new Random;
@@ -29,8 +30,9 @@ export class Baddie extends ex.Actor {
 
     private anim?: ex.Animation;
     private explode?: ex.Animation;
-    private fireTimer?: ex.Timer;
+    private fireTimers: ex.Timer[] = [];
     private fireConfig: FireConfig;
+
     constructor(x: number, y: number, width: number, height: number, fireConfig: FireConfig) {
         super({
             pos: new ex.Vector(x, y),
@@ -66,13 +68,16 @@ export class Baddie extends ex.Actor {
                     .repeatForever();
 
         // Setup firing timer, repeats forever
-        this.fireTimer = new ex.Timer({
-            fcn: () => { this. fire(engine) },
-            interval: Config.enemyFireInterval,
-            repeats: true,
-            numberOfRepeats: -1
-        });
-        engine.addTimer(this.fireTimer);
+        this.fireConfig.fireTimes.forEach((time) => {
+            let timer = new ex.Timer({
+                fcn: () => { this.fire(engine) },
+                interval: time,
+                repeats: false
+            });
+            engine.addTimer(timer);
+
+            this.fireTimers.push(timer);
+        })        
     }
 
     // Fires before excalibur collision resoulation
